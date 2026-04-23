@@ -1,0 +1,98 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "busqueda de Equipos de futbol",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Team",
+              "placeholder": "Ingresa el nombre completo ej. CF america, Colombia, Atletico Bucaramanga",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Nombre",
+              "placeholder": "Ingresa tu User",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cacffe72-864a-48de-89b6-35c9cb18503a",
+      "name": "On form submission",
+      "webhookId": "acf651d5-4a05-4deb-937c-0a7f0e8bf80b"
+    },
+    {
+      "parameters": {
+        "url": "https://www.thesportsdb.com/api/v1/json/123/searchteams.php",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "t",
+              "value": "={{ $json.Team }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "351b6c8b-72b3-4bd2-95d8-57e049f746bf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (!item.json || !item.json.teams || !item.json.teams[0]) {\n    return {\n      json: {\n        message: \"No Existe el Equipo\",\n        team: null \n      }\n    };\n  }\n  \n  const teamInfo = item.json.teams[0];\n  return {\n    json: {\n      team: {\n        name: teamInfo.strTeam || \"\",\n        stadium: teamInfo.strStadium || \"\",\n        location: teamInfo.strStadiumLocation || \"\",\n        league: teamInfo.strLeague || \"\",\n        description: teamInfo.strDescriptionEN || \"\"\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d2a8fc27-bd23-4076-a8e7-847c77d1b821",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
+  }
+}
