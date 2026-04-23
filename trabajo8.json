@@ -37,11 +37,11 @@
           "conditions": [
             {
               "id": "35f4747c-9603-4da4-8e3e-a0388d1a4ff2",
-              "leftValue": "={{ $json.region }}",
-              "rightValue": "Americas",
+              "leftValue": "={{ $json.population }}",
+              "rightValue": 50000000,
               "operator": {
-                "type": "string",
-                "operation": "equals"
+                "type": "number",
+                "operation": "lt"
               }
             }
           ],
@@ -57,6 +57,39 @@
       ],
       "id": "1ec1270b-bf93-4dd7-b6a5-6dbcbc3dc52b",
       "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c13d28e7-e529-4b82-b26f-297b17378983",
+              "leftValue": "={{ $json.region }}",
+              "rightValue": "Americas",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        608,
+        -80
+      ],
+      "id": "eb2452da-9dd7-4759-a7ae-341b95a3b3ce",
+      "name": "If1"
     }
   ],
   "connections": {
@@ -76,6 +109,17 @@
         [
           {
             "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
             "type": "main",
             "index": 0
           }
