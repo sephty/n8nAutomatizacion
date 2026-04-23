@@ -1,0 +1,181 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        0
+      ],
+      "id": "c109cde6-f0b9-4642-80e0-ccda330a1722",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://randomuser.me/api?results=5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "3f9a10c2-6e91-4742-949b-ca8e91a8e25a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://uselessfacts.jsph.pl/random.json?language=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -448,
+        112
+      ],
+      "id": "cdbe8369-9a89-4e9e-a2f2-8011f5085737",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        160,
+        16
+      ],
+      "id": "f6638b09-a724-4a94-9b51-98868f865f83",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "270411ee-5425-43d4-8408-3b609cb1ac78",
+              "name": "Name",
+              "value": "={{ $json.results[0].name.first }} {{ $json.results[0].name.last }}",
+              "type": "string"
+            },
+            {
+              "id": "64165639-084f-4842-9003-1a2d2e122048",
+              "name": "City",
+              "value": "={{ $json.results[0].location.city }}",
+              "type": "string"
+            },
+            {
+              "id": "5404e92d-0f57-4d80-b2cf-f38352e954f2",
+              "name": "Email",
+              "value": "={{ $json.results[0].email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "ea1e416b-906c-49d5-8d59-61e5bd2d84bb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0db0a3ff-5d8c-411d-a162-93dca10b02cb",
+              "name": "Fact:",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        112
+      ],
+      "id": "8a13e3a4-8282-4ddd-95e2-427376258c40",
+      "name": "Edit Fields1"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
+  }
+}
