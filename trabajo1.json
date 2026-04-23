@@ -1,0 +1,147 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### Instrucciones\n1. Copia la URL del nodo Webhook.\n2. Abre esa URL en una nueva pestaña del navegador.\n3. Asegúrate de que el flujo esté activo o usa la Test URL para ver los datos.",
+        "height": 180,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -250,
+        -50
+      ],
+      "id": "note-instructions"
+    },
+    {
+      "parameters": {
+        "path": "data-view",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        100,
+        150
+      ],
+      "id": "faeb15d8-e93e-46dd-931f-32033ba49483",
+      "name": "Webhook",
+      "webhookId": "bb5cedfc-bbc0-469b-81ef-137c55d7ae28"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "nombre",
+              "value": "Juan Pérez",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "ciudad",
+              "value": "Bucaramanga",
+              "type": "string"
+            },
+            {
+              "id": "635ef736-dde1-4421-8bed-63e045eec2de",
+              "name": "Departamento",
+              "value": "Santander",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "50c9b2ad-a45f-4263-94b1-734d9aeb9886",
+      "name": "Definir Datos",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "convertToHtmlTable",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        540,
+        150
+      ],
+      "id": "f1aa6adf-f7b2-413c-90ac-390eba5007d6",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.table }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-type",
+                "value": "text/html"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        760,
+        150
+      ],
+      "id": "9f9135bf-b8b4-4110-923a-81a0c268d8de",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Definir Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Datos": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
+  }
+}
