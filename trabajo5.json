@@ -1,0 +1,229 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "118d6058-76cc-4eeb-830c-361013d515c6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://jsonplaceholder.typicode.com/users",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "733eb019-7b15-4652-9eeb-cb8c009387e8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1QsSIeKkIlYssPPzNIUPVwJOS2qfb_tybAUB-I4hEgWY",
+          "mode": "list",
+          "cachedResultName": "H1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QsSIeKkIlYssPPzNIUPVwJOS2qfb_tybAUB-I4hEgWY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QsSIeKkIlYssPPzNIUPVwJOS2qfb_tybAUB-I4hEgWY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User": "={{ $json.User }}",
+            "Nombre": "={{ $json.Nombre }}",
+            "Celular": "={{ $json.Celular }}",
+            "Compania": "={{ $json.Compania }}",
+            "Email": "={{ $json.Email }}",
+            "ID": "={{ $json.ID }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User",
+              "displayName": "User",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Celular",
+              "displayName": "Celular",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Compania",
+              "displayName": "Compania",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        0
+      ],
+      "id": "8960de9c-a488-4e58-839d-f8649c84c961",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gMgPeWQABN3Ct4kg",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "133396a1-3d94-46cf-b114-5ca18ceb67af",
+              "name": "User",
+              "value": "={{ $json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "22121e2c-4726-48a6-9fdc-87577de4a5ae",
+              "name": "Nombre",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d94d256a-2c9a-4a92-96d5-45c54c0070b1",
+              "name": "Celular",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "c5ce27db-cadc-47f1-ab18-d910d0ff4c05",
+              "name": "Compania",
+              "value": "={{ $json.company.name }}",
+              "type": "string"
+            },
+            {
+              "id": "274fe6b6-3b18-40a1-a733-a7ad831fd5a0",
+              "name": "Email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "0f57220d-e3d2-49a8-ba2f-0214ff9f7519",
+              "name": "ID",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        0
+      ],
+      "id": "53c3f3e7-480f-40dd-9143-ad36c90ddf38",
+      "name": "Edit Fields"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
+  }
+}
