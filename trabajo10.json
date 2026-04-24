@@ -196,12 +196,6 @@
               "name": "timestamp",
               "value": "={{ new Date().toLocaleString(\"es-ES\", {timeZone: \"America/Bogota\"}) }}",
               "type": "string"
-            },
-            {
-              "id": "chatid",
-              "name": "chatId",
-              "value": "={{ $(\"Weather Form\").item.json.chatId }}",
-              "type": "string"
             }
           ]
         },
@@ -222,12 +216,11 @@
           "values": [
             {
               "conditions": {
-                "combinator": "and",
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 1
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -239,31 +232,32 @@
                       "operation": "gt"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Hot"
             },
             {
               "conditions": {
-                "combinator": "and",
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
                   "typeValidation": "strict",
-                  "version": 1
+                  "version": 3
                 },
                 "conditions": [
                   {
                     "id": "cold",
                     "leftValue": "={{ $json.temperature }}",
-                    "rightValue": 10,
+                    "rightValue": 17,
                     "operator": {
                       "type": "number",
                       "operation": "lt"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
               "renameOutput": true,
               "outputKey": "Cold"
