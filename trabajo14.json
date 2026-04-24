@@ -1,0 +1,307 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "model": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        64
+      ],
+      "id": "517a991c-ba53-4187-aaf3-23e173e9f3f5",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "FxNHcr1gd6KUtLXL",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "id": "7fcd9674-71d3-40ed-af2a-461a61739643",
+      "name": "Limit to 3 News",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        640,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "11ae89e6-8c52-4a97-bdd8-485faa1297bd",
+      "name": "Dropped News",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "38cdf34b-9dec-4515-bb1e-d0b344d61da0",
+      "name": "Loop Each Headline",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "6132726794",
+        "text": "={{ { \"alta\": \"🔴 URGENTE\", \"media\": \"🟡 IMPORTANTE\", \"baja\": \"🟢 AL DÍA\" }[$json.urgencia] }}  |  📂 {{ $json.categoria }}\n\n📰 *{{ $json.titular }}*\n\n🧠 *¿Por qué importa?*\n{{ $json.por_que }}\n\n🔗 [Leer noticia completa]({{ $json.link }})",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "d49d9bca-eede-4496-83a0-81b22b26c336",
+      "name": "Post to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        224
+      ],
+      "webhookId": "9f364ec0-e076-417a-a20b-e30a5857a28f",
+      "credentials": {
+        "telegramApi": {
+          "id": "qb5eJo0WeKbZ5jP9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.publicar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "id": "d72196c8-c00e-41a1-b419-b123c1c20e22"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "da0a0398-4c81-4ded-964a-1795386687b1",
+      "name": "Should Publish?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1712,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const parsed = JSON.parse($input.item.json.text);\nreturn { json: {\n  ...parsed,\n  original_title: $(\"Loop Each Headline\").item.json.title,\n  link: $(\"Loop Each Headline\").item.json.link\n}};"
+      },
+      "id": "4afb2a51-37d9-4c9f-9066-e28238075141",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Titular: {{ $json.title }}\nDescripción: {{ $json.summary }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Eres un editor de noticias muy exigente. Tu trabajo es decidir si una noticia merece ser publicada urgentemente o no. Responde SOLO con JSON puro sin bloques de código:\n\n{\n  \"publicar\": true o false,\n  \"urgencia\": \"alta\" o \"media\" o \"baja\",\n  \"categoria\": \"Política\" o \"Economía\" o \"Tecnología\" o \"Desastre\" o \"Ciencia\" o \"Otro\",\n  \"titular\": \"reescribe el titular de forma más impactante\",\n  \"por_que\": \"una frase explicando por qué importa o no\"\n}\n\nPublica SOLO si la noticia tiene impacto real en la gente. Ignora noticias de farándula, clickbait o triviales."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "0bb8ac1e-4aef-4068-be14-60490693df89",
+      "name": "AI News Judge",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1136,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/mundo/rss.xml",
+        "options": {}
+      },
+      "id": "2e534e66-6c66-4e24-97f0-0048428a6355",
+      "name": "Fetch News Headlines",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        480
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        304,
+        480
+      ],
+      "id": "f1b2db18-39c1-4208-bf1b-73a046ed4577",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI News Judge",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to 3 News": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Headline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dropped News": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Headline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Each Headline": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI News Judge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Headline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Publish?": {
+      "main": [
+        [
+          {
+            "node": "Post to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Dropped News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Should Publish?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI News Judge": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch News Headlines": {
+      "main": [
+        [
+          {
+            "node": "Limit to 3 News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Fetch News Headlines",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+  }
+}
