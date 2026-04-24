@@ -1,0 +1,447 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Consulta del Clima",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "¿En qué ciudad estás?",
+              "fieldName": "city",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0bd11483-02b7-4a04-b88f-05aa38353869",
+      "name": "Weather Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        240,
+        504
+      ],
+      "webhookId": "c1e9ce11-b2ab-4500-9250-11f6311247c8"
+    },
+    {
+      "parameters": {
+        "url": "https://geocoding-api.open-meteo.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.city }}"
+            },
+            {
+              "name": "count",
+              "value": "1"
+            },
+            {
+              "name": "language",
+              "value": "es"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "1564c298-f59b-4971-8b7f-f4965ebfe800",
+      "name": "Geocoding API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        504
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lat",
+              "name": "lat",
+              "value": "={{ $json.results[0].latitude }}",
+              "type": "number"
+            },
+            {
+              "id": "lon",
+              "name": "lon",
+              "value": "={{ $json.results[0].longitude }}",
+              "type": "number"
+            },
+            {
+              "id": "city_name",
+              "name": "city_name",
+              "value": "={{ $json.results[0].name }}",
+              "type": "string"
+            },
+            {
+              "id": "country",
+              "name": "country",
+              "value": "={{ $json.results[0].country }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e76512ba-d4e8-41fc-ab01-ae4c2763a0a1",
+      "name": "Store Coordinates",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        656,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.lat }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.lon }}"
+            },
+            {
+              "name": "current_weather",
+              "value": "true"
+            },
+            {
+              "name": "wind_speed_unit",
+              "value": "kmh"
+            },
+            {
+              "name": "temperature_unit",
+              "value": "celsius"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "851ade8c-a517-4d05-958c-2ce633deb9d9",
+      "name": "Weather API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "weather_desc",
+              "name": "weather_description",
+              "value": "={{ ({ 0: \"Despejado\", 1: \"Principalmente despejado\", 2: \"Parcialmente nublado\", 3: \"Nublado\", 45: \"Niebla\", 48: \"Niebla con escarcha\", 51: \"Llovizna\", 61: \"Lluvia ligera\", 63: \"Lluvia moderada\", 80: \"Chubascos\" })[$json.current_weather.weathercode] || \"Condición mixta\" }}",
+              "type": "string"
+            },
+            {
+              "id": "temp",
+              "name": "temperature",
+              "value": "={{ $json.current_weather.temperature }}",
+              "type": "number"
+            },
+            {
+              "id": "wind",
+              "name": "windspeed",
+              "value": "={{ $json.current_weather.windspeed }}",
+              "type": "number"
+            },
+            {
+              "id": "code",
+              "name": "weathercode",
+              "value": "={{ $json.current_weather.weathercode }}",
+              "type": "number"
+            },
+            {
+              "id": "city",
+              "name": "city_name",
+              "value": "={{ $(\"Store Coordinates\").item.json.city_name }}",
+              "type": "string"
+            },
+            {
+              "id": "country",
+              "name": "country",
+              "value": "={{ $(\"Store Coordinates\").item.json.country }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp",
+              "name": "timestamp",
+              "value": "={{ new Date().toLocaleString(\"es-ES\", {timeZone: \"America/Bogota\"}) }}",
+              "type": "string"
+            },
+            {
+              "id": "chatid",
+              "name": "chatId",
+              "value": "={{ $(\"Weather Form\").item.json.chatId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "703b21bb-ba5c-480c-abd2-4059a6945021",
+      "name": "Decode Weather",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "hot",
+                    "leftValue": "={{ $json.temperature }}",
+                    "rightValue": 33,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Hot"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "cold",
+                    "leftValue": "={{ $json.temperature }}",
+                    "rightValue": 10,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Cold"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Normal"
+        }
+      },
+      "id": "06ce24ea-de61-47f9-9884-a311a036c3d3",
+      "name": "Route by Temperature",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "=6132726794",
+        "text": "=🌤️ *Reporte del Clima*\n📍 {{ $json.city_name }}, {{ $json.country }}\n🕐 {{ $json.timestamp }}\n\n🌡️ *Temperatura:* {{ $json.temperature }}°C\n💨 *Viento:* {{ $json.windspeed }} km/h\n🌥️ *Condición:* {{ $json.weather_description }}\n\n━━━━━━━━━━━━━━━\n🔴 *ALERTA DE CALOR*\nLa temperatura supera los 33°C.\n\n⚠️ *Recomendaciones:*\n- Mantente hidratado — bebe agua frecuentemente\n- Evita actividad física al aire libre entre 12pm–4pm\n- Usa ropa ligera y protector solar\n- Busca lugares frescos o con aire acondicionado\n- Revisa el estado de personas mayores y niños",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "1dd6dbc2-764b-4b1a-a765-ea5af87d3577",
+      "name": "Send Hot Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        320
+      ],
+      "webhookId": "1f523cee-7aa7-490e-b741-0299624a9881",
+      "credentials": {
+        "telegramApi": {
+          "id": "qb5eJo0WeKbZ5jP9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "=6132726794",
+        "text": "=🌤️ *Reporte del Clima*\n📍 {{ $json.city_name }}, {{ $json.country }}\n🕐 {{ $json.timestamp }}\n\n🌡️ *Temperatura:* {{ $json.temperature }}°C\n💨 *Viento:* {{ $json.windspeed }} km/h\n🌥️ *Condición:* {{ $json.weather_description }}\n\n━━━━━━━━━━━━━━━\n🔵 *ALERTA DE FRÍO*\nLa temperatura está por debajo de 10°C.\n\n⚠️ *Recomendaciones:*\n- Abrígate bien — usa capas de ropa\n- Evita exposición prolongada al viento\n- Ten cuidado con superficies resbaladizas\n- Protege a mascotas y plantas sensibles\n- Calienta tu hogar con precaución y ventilación",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "9699df56-85df-4598-b209-69f0fdcd8ed3",
+      "name": "Send Cold Alert",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        512
+      ],
+      "webhookId": "249a2096-193c-453f-b76f-d4ddf77441b1",
+      "credentials": {
+        "telegramApi": {
+          "id": "qb5eJo0WeKbZ5jP9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "=6132726794",
+        "text": "=🌤️ *Reporte del Clima*\n📍 {{ $json.city_name }}, {{ $json.country }}\n🕐 {{ $json.timestamp }}\n\n🌡️ *Temperatura:* {{ $json.temperature }}°C\n💨 *Viento:* {{ $json.windspeed }} km/h\n🌥️ *Condición:* {{ $json.weather_description }}\n\n✅ *Clima Normal*\nLas condiciones son agradables. ¡Disfruta tu día!",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "d54b2c14-ae56-4da3-8549-0c1d21c8ccc7",
+      "name": "Send Normal Weather",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        704
+      ],
+      "webhookId": "0b59c025-c035-40f8-93e3-e095d6b73102",
+      "credentials": {
+        "telegramApi": {
+          "id": "qb5eJo0WeKbZ5jP9",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weather Form": {
+      "main": [
+        [
+          {
+            "node": "Geocoding API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocoding API": {
+      "main": [
+        [
+          {
+            "node": "Store Coordinates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Coordinates": {
+      "main": [
+        [
+          {
+            "node": "Weather API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather API": {
+      "main": [
+        [
+          {
+            "node": "Decode Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode Weather": {
+      "main": [
+        [
+          {
+            "node": "Route by Temperature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Temperature": {
+      "main": [
+        [
+          {
+            "node": "Send Hot Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Cold Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Normal Weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+  }
+}
