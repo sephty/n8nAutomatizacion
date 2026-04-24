@@ -1,1 +1,303 @@
-
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "a424bc19-b24b-4d66-a21b-a43fbf32c19e",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Resume esta noticia en español en 4-5 oraciones:\n\nTítulo: {{ $json.title }}\nDescripción: {{ $json.description }}\nFuente: {{ $json.source }}",
+        "options": {
+          "systemMessage": "Eres un asistente de noticias. Resume las noticias de forma clara y concisa en español."
+        }
+      },
+      "id": "3ea9b5f4-0341-4319-a21e-d6b35e624633",
+      "name": "AI Summarizer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1136,
+        128
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 1000,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "https://gnews.io/api/v4/top-headlines",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "topic",
+              "value": "technology"
+            },
+            {
+              "name": "lang",
+              "value": "es"
+            },
+            {
+              "name": "country",
+              "value": "={{ $json.country_code }}"
+            },
+            {
+              "name": "max",
+              "value": "5"
+            },
+            {
+              "name": "apikey",
+              "value": "2f733bc3d5f8eecec84b7e8a5d63df98"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "68af4cef-f760-4c4b-b6d9-36c68dccf259",
+      "name": "Fetch News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        688,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b:free",
+        "options": {}
+      },
+      "id": "c9db6e24-33e7-4c0d-9db6-53d8e6643f4f",
+      "name": "OpenRouter Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1208,
+        352
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "FxNHcr1gd6KUtLXL",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "message",
+              "value": "=🗞️ *Noticia Principal de Hoy*\n{{ $now.toFormat(\"d MMMM yyyy\") }}\n━━━━━━━━━━━━━━━━━━\n\n📰 *{{ $(\"Get First Article\").item.json.title }}*\n\n{{ $json.output }}\n\n🔗 {{ $(\"Get First Article\").item.json.url }}\n📡 Fuente: {{ $(\"Get First Article\").item.json.source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "83d7a311-4a4f-47c5-aa5d-232688866cbe",
+      "name": "Prepare Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1488,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "6132726794",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "528f3384-f238-42d1-8b5f-e3aa2e5ea4c4",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1712,
+        128
+      ],
+      "webhookId": "42883f05-7b9b-46df-be62-77f798e74655",
+      "credentials": {
+        "telegramApi": {
+          "id": "qb5eJo0WeKbZ5jP9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "country_code",
+              "value": "co",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "10daaef8-1957-4b89-835e-4623fa31f925",
+      "name": "Set Country",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "title",
+              "value": "={{ $json.articles[0].title }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "description",
+              "value": "={{ $json.articles[0].description }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "url",
+              "value": "={{ $json.articles[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "source",
+              "value": "={{ $json.articles[0].source.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6adf0ef2-96d2-40d4-a773-fcbb59efe926",
+      "name": "Get First Article",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        128
+      ]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          {
+            "node": "Set Country",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Prepare Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch News": {
+      "main": [
+        [
+          {
+            "node": "Get First Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Summarizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Telegram": {
+      "main": [
+        []
+      ]
+    },
+    "Set Country": {
+      "main": [
+        [
+          {
+            "node": "Fetch News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Article": {
+      "main": [
+        [
+          {
+            "node": "AI Summarizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+  }
+}
