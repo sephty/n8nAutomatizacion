@@ -1,0 +1,135 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "350384ed-1bdf-422d-825d-4c6d7b7baedb",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en",
+        "options": {}
+      },
+      "id": "5034315e-883a-450c-ab0a-61027a0b5a6d",
+      "name": "Fetch Random Fact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        304
+      ],
+      "id": "c3ec150e-9dad-466e-acee-93af2ce32e06",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres un clasificador de textos. Analiza el texto recibido y responde SOLO con este formato:\n\n📝 TEXTO ORIGINAL: \n😊 SENTIMIENTO: [Positivo / Negativo / Neutral]\n📂 CATEGORÍA: [Ciencia / Cultura / Tecnología / Salud / General]\n📝 RAZÓN: [una sola oración explicando tu clasificación]\n\n\n\nTexto:  {{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        304
+      ],
+      "id": "d37826a6-3105-48f0-93ed-0a2fe5e0a410",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        672,
+        512
+      ],
+      "id": "70657f3f-d8fa-4b9b-b1e0-1164ac7ad590",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "FxNHcr1gd6KUtLXL",
+          "name": "OpenRouter account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Fetch Random Fact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Random Fact": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+  }
+}
