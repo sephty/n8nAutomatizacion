@@ -1,0 +1,147 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "6c565c76-8bc8-4e75-8bfe-d35305ff3a2a",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en",
+        "options": {}
+      },
+      "id": "f83187ac-c953-4f6d-9e1c-1cd8fe75ab04",
+      "name": "Fetch Random Fact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        464,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza el siguiente texto y responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin explicaciones, sin bloques de código. Solo el JSON puro.\n\nFormato exacto:\n{\n  \"sentimiento\": \"Positivo\" o \"Negativo\" o \"Neutral\",\n  \"categoria\": \"Ciencia\" o \"Cultura\" o \"Tecnología\" o \"Salud\" o \"General\",\n  \"resumen\": \"una oración resumiendo el texto\",\n  \"confianza\": número del 1 al 100 indicando qué tan seguro estás\n}\n\nTexto: {{ $json.text }}",
+        "options": {
+          "systemMessage": "Eres un analizador de textos. Responde ÚNICAMENTE con JSON válido. No agregues texto adicional, explicaciones ni bloques de código markdown. Solo el objeto JSON puro."
+        }
+      },
+      "id": "13b55d01-b569-4754-a58d-9264d19fae24",
+      "name": "AI Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        688,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openrouter/free",
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.3
+        }
+      },
+      "id": "0e9e6e11-c348-48cc-9554-dcc04ad868eb",
+      "name": "OpenRouter Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        688,
+        528
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "FxNHcr1gd6KUtLXL",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $input.item.json.output;\nconst parsed = JSON.parse(raw);\nreturn { json: parsed };"
+      },
+      "id": "8c312da4-0a29-48e1-a585-ac674631e98f",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        304
+      ]
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Fetch Random Fact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Random Fact": {
+      "main": [
+        [
+          {
+            "node": "AI Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+  }
+}
