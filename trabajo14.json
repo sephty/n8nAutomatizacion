@@ -1,0 +1,377 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.api-ninjas.com/v2/randomquotes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "options": {}
+      },
+      "id": "1194abdc-2835-428c-ac34-cbd72321c0ae",
+      "name": "Fetch Quote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1040,
+        16
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0ogWf0HNfjkRBegx",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\"Frase: {{ $json.quote }}\"",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Responde SOLO con JSON puro:\n{\n  \"sentimiento\": \"positivo\" o \"negativo\",\n  \"razon\": \"una frase corta\"\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "beff9341-073f-42c3-848b-347d05b0171c",
+      "name": "AI Sentiment Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -816,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const parsed = JSON.parse($input.item.json.text);\nreturn {\n  json: {\n    sentimiento: parsed.sentimiento,\n    razon: parsed.razon,\n    quote: $(\"Fetch Quote\").item.json.quote,\n    author: $(\"Fetch Quote\").item.json.author\n  }\n};"
+      },
+      "id": "6ccb6482-39b4-46e8-a4cb-4cde8e68cdf0",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.sentimiento }}",
+              "rightValue": "positivo",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "id": "8dcc7d03-aa93-440b-8cc6-d28d2d5a9fad"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "60f173cc-784f-41a3-a341-e529a92f5bb4",
+      "name": "Check Sentiment",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA",
+          "mode": "list",
+          "cachedResultName": "nn8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Positive",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Reason": "={{ $json.razon }}",
+            "Author": "={{ $json.author }}",
+            "Quote": "={{ $json.quote }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Quote",
+              "displayName": "Quote",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d75daa40-f661-466c-8434-a2eb135b924c",
+      "name": "Append to Positivos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gMgPeWQABN3Ct4kg",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA",
+          "mode": "list",
+          "cachedResultName": "nn8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1399102765,
+          "mode": "list",
+          "cachedResultName": "negative",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit#gid=1399102765"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Quote": "={{ $json.quote }}",
+            "Author": "={{ $json.author }}",
+            "Reason": "={{ $json.razon }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Quote",
+              "displayName": "Quote",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Author",
+              "displayName": "Author",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Reason",
+              "displayName": "Reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "83059611-6fd7-4403-a22a-f5ebcbdfec8d",
+      "name": "Append to Negativos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gMgPeWQABN3Ct4kg",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1232,
+        16
+      ],
+      "id": "4c8cee39-b55f-4c95-85f9-eab5b8d62e2a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -816,
+        208
+      ],
+      "id": "bd69ef72-1b1d-4e4a-a2bd-3e81f45b5d87",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "lJtzP7OT9rDuzKb6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Fetch Quote": {
+      "main": [
+        [
+          {
+            "node": "AI Sentiment Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Sentiment Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Check Sentiment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Sentiment": {
+      "main": [
+        [
+          {
+            "node": "Append to Positivos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append to Negativos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Sentiment Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
+  }
+}
