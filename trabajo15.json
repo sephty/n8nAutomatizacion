@@ -1,28 +1,17 @@
 {
   "nodes": [
     {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        304,
-        632
-      ],
-      "id": "f1b2db18-39c1-4208-bf1b-73a046ed4577",
-      "name": "When clicking ‘Execute workflow’"
-    },
-    {
       "parameters": {
         "url": "https://feeds.bbci.co.uk/mundo/rss.xml",
         "options": {}
       },
-      "id": "2e534e66-6c66-4e24-97f0-0048428a6355",
+      "id": "eb81f33f-2698-436b-be54-0a9d2072c0e3",
       "name": "Fetch News Headlines",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.2,
       "position": [
-        528,
-        632
+        144,
+        752
       ]
     },
     {
@@ -32,19 +21,20 @@
         "messages": {
           "messageValues": [
             {
+              "type": "=SystemMessagePromptTemplate",
               "message": "Eres un editor de noticias muy exigente. Tu trabajo es decidir si una noticia merece ser publicada urgentemente o no. Responde SOLO con JSON puro sin bloques de código:\n\n{\n  \"publicar\": true o false,\n  \"urgencia\": \"alta\" o \"media\" o \"baja\",\n  \"categoria\": \"Política\" o \"Economía\" o \"Tecnología\" o \"Desastre\" o \"Ciencia\" o \"Otro\",\n  \"titular\": \"reescribe el titular de forma más impactante\",\n  \"por_que\": \"una frase explicando por qué importa o no\"\n}\n\nPublica SOLO si la noticia tiene impacto real en la gente. Ignora noticias de farándula, clickbait o triviales."
             }
           ]
         },
         "batching": {}
       },
-      "id": "0bb8ac1e-4aef-4068-be14-60490693df89",
+      "id": "fee324d3-7230-4e88-9dab-4d3fac1e5eae",
       "name": "AI News Judge",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        1248,
-        640
+        816,
+        624
       ],
       "retryOnFail": true,
       "waitBetweenTries": 1500
@@ -54,13 +44,13 @@
         "mode": "runOnceForEachItem",
         "jsCode": "const parsed = JSON.parse($input.item.json.text);\nreturn { json: {\n  ...parsed,\n  original_title: $(\"Loop Each Headline\").item.json.title,\n  link: $(\"Loop Each Headline\").item.json.link\n}};"
       },
-      "id": "4afb2a51-37d9-4c9f-9066-e28238075141",
+      "id": "0921f207-8c25-4ddf-ab1d-2747ed8c7119",
       "name": "Parse AI Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1552,
-        640
+        1168,
+        624
       ]
     },
     {
@@ -69,239 +59,174 @@
           "reset": false
         }
       },
-      "id": "38cdf34b-9dec-4515-bb1e-d0b344d61da0",
+      "id": "0478844c-4bec-4551-ab65-7a6901a554e6",
       "name": "Loop Each Headline",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        976,
-        632
-      ]
-    },
-    {
-      "parameters": {},
-      "id": "11ae89e6-8c52-4a97-bdd8-485faa1297bd",
-      "name": "Dropped News",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        2064,
-        928
+        592,
+        752
       ]
     },
     {
       "parameters": {
         "maxItems": 3
       },
-      "id": "7fcd9674-71d3-40ed-af2a-461a61739643",
+      "id": "38185662-2638-4057-b08e-55cd3114e8a3",
       "name": "Limit to 3 News",
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        752,
-        632
+        368,
+        752
       ]
     },
     {
       "parameters": {
-        "model": "minimax/minimax-m2.5:free",
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
       "position": [
-        1248,
-        896
+        832,
+        848
       ],
-      "id": "517a991c-ba53-4187-aaf3-23e173e9f3f5",
-      "name": "OpenRouter Chat Model",
+      "id": "03cf4d01-aaf2-4240-850e-3fbca9d57eaf",
+      "name": "OpenAI Chat Model",
       "credentials": {
-        "openRouterApi": {
-          "id": "FxNHcr1gd6KUtLXL",
-          "name": "OpenRouter account"
+        "openAiApi": {
+          "id": "lJtzP7OT9rDuzKb6",
+          "name": "n8n free OpenAI API credits"
         }
       }
     },
     {
       "parameters": {
-        "rules": {
-          "values": [
+        "rule": {
+          "interval": [
             {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.urgencia }}",
-                    "rightValue": "alta",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "b7404432-d369-461d-ae2c-ed0a62f68eb7"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Alta"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.urgencia }}",
-                    "rightValue": "media",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "29cd7e23-96c8-453f-a76a-2960a862bc6e"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Media"
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.urgencia }}",
-                    "rightValue": "baja",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "63d67032-0627-422d-956d-9532cf429750"
-                  }
-                ],
-                "combinator": "and"
-              },
-              "renameOutput": true,
-              "outputKey": "Baja"
+              "triggerAtHour": 12
             }
           ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        752
+      ],
+      "id": "d31d65d0-1ca1-4b8f-b60e-842afd5c149a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA",
+          "mode": "list",
+          "cachedResultName": "nn8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit?usp=drivesdk"
         },
-        "options": {
-          "fallbackOutput": "extra",
-          "renameFallbackOutput": "Descartada"
-        }
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PK7n2K9j9iRAI362spixtN1uaU9V3DOL8SqFQuXJ4uA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Urgencia": "={{ $json.urgencia }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Titular": "={{ $json.titular }}",
+            "Explicacion": "={{ $json.por_que }}",
+            "Link": "={{ $json.link }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Urgencia",
+              "displayName": "Urgencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Titular",
+              "displayName": "Titular",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Explicacion",
+              "displayName": "Explicacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
       },
-      "id": "84eff356-ef4f-4734-a2ed-50f3f51d1287",
-      "name": "Route by Urgency",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
+      "id": "c8703450-a9aa-4ad5-aab2-017ea84baa76",
+      "name": "Add to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
       "position": [
-        1728,
-        608
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "6132726794",
-        "text": "=🔴 *URGENTE*  | {{ $json.categoria }}\n\n *{{ $json.titular }}*\n\n *¿Por qué importa?*\n{{ $json.por_que }}\n\n[Leer noticia completa]({{ $json.link }})",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "Markdown"
-        }
-      },
-      "id": "61e4d3db-ecc2-4fb0-a3eb-fabe0e9d9a96",
-      "name": "Telegram: Urgente",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        2080,
-        176
+        1408,
+        624
       ],
-      "webhookId": "919f9856-712a-4e4f-bccf-092b84471112",
       "credentials": {
-        "telegramApi": {
-          "id": "qb5eJo0WeKbZ5jP9",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "6132726794",
-        "text": "=🟡 *IMPORTANTE*  | {{ $json.categoria }}\n\n*{{ $json.titular }}*\n\n *¿Por qué importa?*\n{{ $json.por_que }}\n\n[Leer noticia completa]({{ $json.link }})",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "Markdown"
-        }
-      },
-      "id": "4bfbd065-13c6-4b45-a8dc-6e5036d42cd1",
-      "name": "Telegram: Importante",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        2096,
-        368
-      ],
-      "webhookId": "8a817b7c-89bf-4052-b654-fe5e269cdd6c",
-      "credentials": {
-        "telegramApi": {
-          "id": "qb5eJo0WeKbZ5jP9",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "chatId": "6132726794",
-        "text": "=🟢 *AL DÍA*  |  {{ $json.categoria }}\n\n*{{ $json.titular }}*\n\n *¿Por qué importa?*\n{{ $json.por_que }}\n\n[Leer noticia completa]({{ $json.link }})",
-        "additionalFields": {
-          "appendAttribution": false,
-          "parse_mode": "Markdown"
-        }
-      },
-      "id": "250eac37-1d8c-4b9b-9dce-d66e42e28e7e",
-      "name": "Telegram: Al Día",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        2080,
-        672
-      ],
-      "webhookId": "6285fd92-a8cc-49b0-b1d8-d659a59c5511",
-      "credentials": {
-        "telegramApi": {
-          "id": "qb5eJo0WeKbZ5jP9",
-          "name": "Telegram account"
+        "googleSheetsOAuth2Api": {
+          "id": "gMgPeWQABN3Ct4kg",
+          "name": "Google Sheets account 2"
         }
       }
     }
   ],
   "connections": {
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "Fetch News Headlines",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Fetch News Headlines": {
       "main": [
         [
@@ -328,7 +253,7 @@
       "main": [
         [
           {
-            "node": "Route by Urgency",
+            "node": "Add to Google Sheets",
             "type": "main",
             "index": 0
           }
@@ -347,17 +272,6 @@
         ]
       ]
     },
-    "Dropped News": {
-      "main": [
-        [
-          {
-            "node": "Loop Each Headline",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Limit to 3 News": {
       "main": [
         [
@@ -369,7 +283,7 @@
         ]
       ]
     },
-    "OpenRouter Chat Model": {
+    "OpenAI Chat Model": {
       "ai_languageModel": [
         [
           {
@@ -380,61 +294,18 @@
         ]
       ]
     },
-    "Route by Urgency": {
+    "Schedule Trigger": {
       "main": [
         [
           {
-            "node": "Telegram: Urgente",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Telegram: Importante",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Telegram: Al Día",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Dropped News",
+            "node": "Fetch News Headlines",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Telegram: Urgente": {
-      "main": [
-        [
-          {
-            "node": "Loop Each Headline",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Telegram: Importante": {
-      "main": [
-        [
-          {
-            "node": "Loop Each Headline",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Telegram: Al Día": {
+    "Add to Google Sheets": {
       "main": [
         [
           {
@@ -449,6 +320,6 @@
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "1c1ef281681378ae706e285b4871e5546c065c2c6cde32cf8d2f329c672de0ea"
+    "instanceId": "42b5df033c7ff061fdb8b2c115c372fcc692f10cfe3f2b8faa5cc0ded988c043"
   }
 }
